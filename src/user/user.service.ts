@@ -5,6 +5,8 @@ import { ILike, Repository } from 'typeorm';
 import { updateUserDto, UserDto } from './user.dto';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
+const fs = require('fs');
+const path = require('path');
 
 @Injectable()
 export class UserService {
@@ -108,11 +110,15 @@ export class UserService {
   async sendEmail(newUser: any) {
     const recipient = newUser.email;
     const transport = this.emailTransport();
+    const htmlFilePath = path.join(
+      '/home/neelan/Downloads/nest_todo/src/html_files/email.html',
+    );
+    const htmlContent = fs.readFileSync(htmlFilePath, 'utf-8');
     const options: nodemailer.SendMailOptions = {
       from: this.configService.get<string>('EMAIL_USER'),
       to: recipient,
       subject: 'Testing email',
-      html: 'Hello, this is from NestJs<br> thank you....',
+      html: htmlContent,
     };
     try {
       (await transport).sendMail(options);
