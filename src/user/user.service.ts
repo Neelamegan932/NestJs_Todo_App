@@ -3,12 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { ILike, Repository } from 'typeorm';
 import { updateUserDto, UserDto } from './user.dto';
-import { JwtService } from '@nestjs/jwt';
+import * as nodemailer from 'nodemailer';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
+    private readonly configService: ConfigService,
   ) {}
 
   async createNewUser(userDto: UserDto) {
@@ -32,7 +34,7 @@ export class UserService {
   }
 
   async getAllUsers(searchQuery?: string) {
-    let [users, count] = await this.userRepo.findAndCount({
+    let users = await this.userRepo.find({
       where: searchQuery
         ? [
             { firstName: ILike(`%${searchQuery}%`) },
@@ -40,7 +42,7 @@ export class UserService {
           ]
         : {},
     });
-    return { code: 'success', users, total_users_count: count };
+    return { code: 'success', users, total_users_count: users.length };
   }
 
   async getOneUser(id: string) {
@@ -87,5 +89,37 @@ export class UserService {
       phone: null,
       isDeleted: true,
     });
+  }
+
+  //Mail sending API
+
+  emailTransport() {
+    const transporter = nodemailer.createTransport({
+      host: this.configService.get<string>('EMAIL_HOST'),
+      port: this.configService.get<number>('PORT'),
+      secure: false,
+      auth: {
+        user: this.configService.get<string>('EMAIL_USER'),
+        pass: this.configService.get<string>('EMAIL_PASSWORD'),
+      },
+    });
+    return transporter;
+  }
+  async sendEmail(newUser: any) {
+    const recipient = newUser.email;
+    const transport = this.emailTransport();
+    const options: nodemailer.SendMailOptions = {
+      from: this.configService.get<string>('EMAIL_USER'),
+      to: recipient,
+      subject: 'Testing email',
+      html: 'Hello, this is from NestJs<br> thank you....',
+    };
+    try {
+      (await transport).sendMail(options);
+      console.log('email sent successfully');
+    } catch (error) {
+      console.log('Error sending the mail', error);
+      error;
+    }
   }
 }

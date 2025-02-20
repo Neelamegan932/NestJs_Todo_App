@@ -11,15 +11,19 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { updateUserDto, UserDto } from './user.dto';
-import { LoginUserDto } from './user.login.dto';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  createUser(@Body() userDto: UserDto) {
-    return this.userService.createNewUser(userDto);
+  async createUser(@Body() userDto: UserDto) {
+    const newUser = await this.userService.createNewUser(userDto);
+
+    if (newUser.code == 'success') {
+      await this.userService.sendEmail(newUser.user);
+      return { message: 'email sent successfully', Details: newUser.user };
+    }
   }
 
   @Get()

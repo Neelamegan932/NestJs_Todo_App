@@ -6,10 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from 'src/strategies/jwt.strategy';
-import { TodoService } from 'src/todo/todo.service';
 import { PassportModule } from '@nestjs/passport';
-import { Todo } from 'src/entities/todo.entity';
-import { TodoModule } from 'src/todo/todo.module';
 
 @Module({
   imports: [

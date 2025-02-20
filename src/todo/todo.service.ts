@@ -65,7 +65,7 @@ export class TodoService {
       await this.todoRepo.update(id, { status: Status.EXPIRED });
       return this.todoRepo.findOne({ where: { id } });
     }
-    const newStatus = diffInHours > 0 ? Status.IN_PROGRESS : Status.COMPLETED;
+    const newStatus = diffInHours > 0 ? Status.NOT_STARTED : Status.COMPLETED;
     await this.todoRepo.update(id, { status: newStatus });
     return this.todoRepo.findOne({ where: { id } });
   }
